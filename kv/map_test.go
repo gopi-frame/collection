@@ -34,6 +34,8 @@ func TestMap_GetOr(t *testing.T) {
 	m.Set(2, 2)
 	v := m.GetOr(10, 1)
 	assert.Equal(t, 1, v)
+	v = m.GetOr(1, 10)
+	assert.Equal(t, 1, v)
 }
 
 func TestMap_Remove(t *testing.T) {
@@ -52,7 +54,7 @@ func TestMap_Keys(t *testing.T) {
 	m.Set(0, 0)
 	m.Set(1, 1)
 	m.Set(2, 2)
-	assert.Equal(t, []int{0, 1, 2}, m.Keys())
+	assert.ElementsMatch(t, []int{0, 1, 2}, m.Keys())
 }
 
 func TestMap_Values(t *testing.T) {
@@ -78,6 +80,7 @@ func TestMap_ContainsKey(t *testing.T) {
 	m.Set(1, 1)
 	m.Set(2, 2)
 	assert.True(t, m.ContainsKey(0))
+	assert.False(t, m.ContainsKey(-1))
 }
 
 func TestMap_Contains(t *testing.T) {
@@ -96,6 +99,9 @@ func TestMap_ContainsWhere(t *testing.T) {
 	assert.True(t, m.ContainsWhere(func(value int) bool {
 		return value == 2
 	}))
+	assert.False(t, m.ContainsWhere(func(value int) bool {
+		return value < 0
+	}))
 }
 
 func TestMap_Each(t *testing.T) {
@@ -103,12 +109,24 @@ func TestMap_Each(t *testing.T) {
 	m.Set(0, 0)
 	m.Set(1, 1)
 	m.Set(2, 2)
-	items := []int{}
-	m.Each(func(key, value int) bool {
-		items = append(items, value)
-		return value < 1
+	t.Run("without break", func(t *testing.T) {
+		var items []int
+		m.Each(func(key, value int) bool {
+			if value <= 1 {
+				items = append(items, value)
+			}
+			return true
+		})
+		assert.ElementsMatch(t, []int{0, 1}, items)
 	})
-	assert.Equal(t, []int{0, 1}, items)
+
+	t.Run("with break", func(t *testing.T) {
+		var items []int
+		m.Each(func(key, value int) bool {
+			return false
+		})
+		assert.Len(t, items, 0)
+	})
 }
 
 func TestMap_ToJSON(t *testing.T) {

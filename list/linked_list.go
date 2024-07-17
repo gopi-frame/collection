@@ -32,21 +32,25 @@ func (l *LinkedList[E]) init() {
 	}
 }
 
+// Count returns the size of the list
 func (l *LinkedList[E]) Count() int64 {
 	l.init()
 	return int64(l.list.Len())
 }
 
+// IsEmpty returns whether the list is empty.
 func (l *LinkedList[E]) IsEmpty() bool {
 	l.init()
 	return l.Count() == 0
 }
 
+// IsNotEmpty returns whether the list is not empty.
 func (l *LinkedList[E]) IsNotEmpty() bool {
 	l.init()
 	return !l.IsEmpty()
 }
 
+// Contains returns whether the list contains the specific element.
 func (l *LinkedList[E]) Contains(value E) bool {
 	l.init()
 	return l.ContainsWhere(func(item E) bool {
@@ -54,6 +58,7 @@ func (l *LinkedList[E]) Contains(value E) bool {
 	})
 }
 
+// ContainsWhere returns whether the list contains specific elements by callback.
 func (l *LinkedList[E]) ContainsWhere(callback func(value E) bool) bool {
 	l.init()
 	for e := l.list.Front(); e != nil; e = e.Next() {
@@ -64,6 +69,7 @@ func (l *LinkedList[E]) ContainsWhere(callback func(value E) bool) bool {
 	return false
 }
 
+// Push pushes elements into the list.
 func (l *LinkedList[E]) Push(values ...E) {
 	l.init()
 	for _, value := range values {
@@ -71,12 +77,14 @@ func (l *LinkedList[E]) Push(values ...E) {
 	}
 }
 
+// Remove removes the specific element.
 func (l *LinkedList[E]) Remove(value E) {
 	l.RemoveWhere(func(item E) bool {
 		return reflect.DeepEqual(item, value)
 	})
 }
 
+// RemoveWhere removes specific elements by callback.
 func (l *LinkedList[E]) RemoveWhere(callback func(item E) bool) {
 	l.init()
 	var next *listlib.Element
@@ -88,6 +96,7 @@ func (l *LinkedList[E]) RemoveWhere(callback func(item E) bool) {
 	}
 }
 
+// RemoveAt removes the element on the specific index.
 func (l *LinkedList[E]) RemoveAt(index int) {
 	l.init()
 	var next *listlib.Element
@@ -100,11 +109,13 @@ func (l *LinkedList[E]) RemoveAt(index int) {
 	}
 }
 
+// Clear clears the list.
 func (l *LinkedList[E]) Clear() {
 	l.init()
 	l.list.Init()
 }
 
+// Get returns the element on the specific index.
 func (l *LinkedList[E]) Get(index int) E {
 	l.init()
 	if index < 0 || index >= l.list.Len() {
@@ -118,6 +129,7 @@ func (l *LinkedList[E]) Get(index int) E {
 	return *new(E)
 }
 
+// Set sets element on the specific index.
 func (l *LinkedList[E]) Set(index int, value E) {
 	l.init()
 	for i, e := 0, l.list.Front(); e != nil; i, e = i+1, e.Next() {
@@ -127,6 +139,8 @@ func (l *LinkedList[E]) Set(index int, value E) {
 	}
 }
 
+// First returns the first element of the list.
+// it will return a zero value and false when the list is empty.
 func (l *LinkedList[E]) First() (E, bool) {
 	l.init()
 	if l.list.Len() == 0 {
@@ -135,6 +149,7 @@ func (l *LinkedList[E]) First() (E, bool) {
 	return l.list.Front().Value.(E), true
 }
 
+// FirstOr returns the first element of the list, it will return the default value when the list is empty.
 func (l *LinkedList[E]) FirstOr(value E) E {
 	l.init()
 	if l.list.Len() == 0 {
@@ -143,6 +158,8 @@ func (l *LinkedList[E]) FirstOr(value E) E {
 	return l.list.Front().Value.(E)
 }
 
+// FirstWhere returns the first element of the list which matches the callback.
+// It will return a zero value and false when none matches the callback.
 func (l *LinkedList[E]) FirstWhere(callback func(item E) bool) (E, bool) {
 	l.init()
 	for e := l.list.Front(); e != nil; e = e.Next() {
@@ -153,6 +170,8 @@ func (l *LinkedList[E]) FirstWhere(callback func(item E) bool) (E, bool) {
 	return *new(E), false
 }
 
+// FirstWhereOr returns the first element of the list which matches the callback.
+// It will return the default value when none matches the callback.
 func (l *LinkedList[E]) FirstWhereOr(callback func(item E) bool, value E) E {
 	l.init()
 	for e := l.list.Front(); e != nil; e = e.Next() {
@@ -163,6 +182,8 @@ func (l *LinkedList[E]) FirstWhereOr(callback func(item E) bool, value E) E {
 	return value
 }
 
+// Last returns the last element of the list.
+// It will return a zero value and false when the list is empty.
 func (l *LinkedList[E]) Last() (E, bool) {
 	l.init()
 	if l.list.Len() == 0 {
@@ -171,6 +192,8 @@ func (l *LinkedList[E]) Last() (E, bool) {
 	return l.list.Back().Value.(E), true
 }
 
+// LastOr returns the last element of the list.
+// It will return the default value when the list is empty.
 func (l *LinkedList[E]) LastOr(value E) E {
 	l.init()
 	if l.list.Back() == nil {
@@ -179,6 +202,8 @@ func (l *LinkedList[E]) LastOr(value E) E {
 	return l.list.Back().Value.(E)
 }
 
+// LastWhere returns the last element of the list which matches the callback.
+// It will return a zero value and false when none matches the callback.
 func (l *LinkedList[E]) LastWhere(callback func(item E) bool) (E, bool) {
 	l.init()
 	for e := l.list.Back(); e != nil; e = e.Prev() {
@@ -189,6 +214,8 @@ func (l *LinkedList[E]) LastWhere(callback func(item E) bool) (E, bool) {
 	return *new(E), false
 }
 
+// LastWhereOr returns the last element of the list which matches the callback.
+// It will return the default value when none matches the callback.
 func (l *LinkedList[E]) LastWhereOr(callback func(item E) bool, value E) E {
 	l.init()
 	if v, ok := l.LastWhere(callback); ok {
@@ -197,6 +224,8 @@ func (l *LinkedList[E]) LastWhereOr(callback func(item E) bool, value E) E {
 	return value
 }
 
+// Pop removes the last element of the list and returns it.
+// It will return a zero value and false when the list is empty.
 func (l *LinkedList[E]) Pop() (E, bool) {
 	l.init()
 	if l.list.Len() == 0 {
@@ -207,6 +236,8 @@ func (l *LinkedList[E]) Pop() (E, bool) {
 	return item.Value.(E), true
 }
 
+// Shift removes the first element of the list and returns it.
+// It will return a zero value and false when the list is empty.
 func (l *LinkedList[E]) Shift() (E, bool) {
 	l.init()
 	if l.list.Len() == 0 {
@@ -217,6 +248,7 @@ func (l *LinkedList[E]) Shift() (E, bool) {
 	return item.Value.(E), true
 }
 
+// Unshift puts elements to the head of the list.
 func (l *LinkedList[E]) Unshift(values ...E) {
 	l.init()
 	for _, value := range values {
@@ -224,6 +256,7 @@ func (l *LinkedList[E]) Unshift(values ...E) {
 	}
 }
 
+// IndexOf returns the index of the specific element.
 func (l *LinkedList[E]) IndexOf(value E) int {
 	l.init()
 	return l.IndexOfWhere(func(item E) bool {
@@ -231,6 +264,7 @@ func (l *LinkedList[E]) IndexOf(value E) int {
 	})
 }
 
+// IndexOfWhere returns the index of the first element which matches the callback.
 func (l *LinkedList[E]) IndexOfWhere(callback func(item E) bool) int {
 	l.init()
 	for i, e := 0, l.list.Front(); e != nil; i, e = i+1, e.Next() {
@@ -241,6 +275,7 @@ func (l *LinkedList[E]) IndexOfWhere(callback func(item E) bool) int {
 	return -1
 }
 
+// Sub returns the sub list with given range
 func (l *LinkedList[E]) Sub(from, to int) *LinkedList[E] {
 	l.init()
 	linked := NewLinkedList[E]()
@@ -256,6 +291,7 @@ func (l *LinkedList[E]) Sub(from, to int) *LinkedList[E] {
 	return linked
 }
 
+// Where returns the sub list with elements which matches the callback
 func (l *LinkedList[E]) Where(callback func(item E) bool) *LinkedList[E] {
 	l.init()
 	linked := &LinkedList[E]{}
@@ -267,6 +303,7 @@ func (l *LinkedList[E]) Where(callback func(item E) bool) *LinkedList[E] {
 	return linked
 }
 
+// Compact makes the list more compact
 func (l *LinkedList[E]) Compact(callback func(a, b E) bool) {
 	l.init()
 	if l.list.Len() < 2 {
@@ -286,16 +323,19 @@ func (l *LinkedList[E]) Compact(callback func(a, b E) bool) {
 	}
 }
 
+// Min returns the min element
 func (l *LinkedList[E]) Min(callback func(a, b E) int) E {
 	l.init()
 	return slices.MinFunc(l.ToArray(), callback)
 }
 
+// Max returns the max element
 func (l *LinkedList[E]) Max(callback func(a, b E) int) E {
 	l.init()
 	return slices.MaxFunc(l.ToArray(), callback)
 }
 
+// Sort sorts the list
 func (l *LinkedList[E]) Sort(callback func(a, b E) int) {
 	l.init()
 	var newList = listlib.New()
@@ -315,6 +355,7 @@ func (l *LinkedList[E]) Sort(callback func(a, b E) int) {
 	l.list = newList
 }
 
+// Chunk splits list into multiply parts by given size
 func (l *LinkedList[E]) Chunk(size int) *LinkedList[*LinkedList[any]] {
 	l.init()
 	chunks := NewLinkedList[*LinkedList[any]]()
@@ -331,6 +372,7 @@ func (l *LinkedList[E]) Chunk(size int) *LinkedList[*LinkedList[any]] {
 	return chunks
 }
 
+// Each travers the list, if the callback returns false then break
 func (l *LinkedList[E]) Each(callback func(index int, value E) bool) {
 	l.init()
 	for e, i := l.list.Front(), 0; e != nil; e, i = e.Next(), i+1 {
@@ -340,6 +382,7 @@ func (l *LinkedList[E]) Each(callback func(index int, value E) bool) {
 	}
 }
 
+// Reverse reverses the list
 func (l *LinkedList[E]) Reverse() {
 	l.init()
 	var next *listlib.Element
@@ -350,6 +393,7 @@ func (l *LinkedList[E]) Reverse() {
 	}
 }
 
+// Clone clones the list
 func (l *LinkedList[E]) Clone() *LinkedList[E] {
 	l.init()
 	linked := &LinkedList[E]{}
@@ -359,6 +403,7 @@ func (l *LinkedList[E]) Clone() *LinkedList[E] {
 	return linked
 }
 
+// String convert to string
 func (l *LinkedList[E]) String() string {
 	l.init()
 	str := new(strings.Builder)
@@ -383,11 +428,13 @@ func (l *LinkedList[E]) String() string {
 	return str.String()
 }
 
+// ToJSON converts to json
 func (l *LinkedList[E]) ToJSON() ([]byte, error) {
 	l.init()
 	return json.Marshal(l.ToArray())
 }
 
+// ToArray converts to array
 func (l *LinkedList[E]) ToArray() []E {
 	l.init()
 	var items []E
@@ -397,11 +444,13 @@ func (l *LinkedList[E]) ToArray() []E {
 	return items
 }
 
+// MarshalJSON implements [json.Marshaller]
 func (l *LinkedList[E]) MarshalJSON() ([]byte, error) {
 	l.init()
 	return l.ToJSON()
 }
 
+// UnmarshalJSON implements [json.Unmarshaller]
 func (l *LinkedList[E]) UnmarshalJSON(data []byte) error {
 	l.init()
 	items := []E{}

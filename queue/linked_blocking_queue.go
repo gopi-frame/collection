@@ -32,6 +32,7 @@ type LinkedBlockingQueue[E any] struct {
 	putLock  *sync.Cond
 }
 
+// Count returns the size of queue
 func (q *LinkedBlockingQueue[E]) Count() int64 {
 	if q.items.TryRLock() {
 		defer q.items.RUnlock()
@@ -39,6 +40,7 @@ func (q *LinkedBlockingQueue[E]) Count() int64 {
 	return q.items.Count()
 }
 
+// IsEmpty returns whether the queue is empty
 func (q *LinkedBlockingQueue[E]) IsEmpty() bool {
 	if q.items.TryRLock() {
 		defer q.items.RUnlock()
@@ -46,6 +48,7 @@ func (q *LinkedBlockingQueue[E]) IsEmpty() bool {
 	return q.items.IsEmpty()
 }
 
+// IsNotEmpty returns whether the queue is not empty
 func (q *LinkedBlockingQueue[E]) IsNotEmpty() bool {
 	if q.items.TryRLock() {
 		defer q.items.RUnlock()
@@ -53,6 +56,7 @@ func (q *LinkedBlockingQueue[E]) IsNotEmpty() bool {
 	return q.items.IsNotEmpty()
 }
 
+// Clear clears the queue
 func (q *LinkedBlockingQueue[E]) Clear() {
 	if q.items.TryLock() {
 		defer q.items.Unlock()
@@ -60,6 +64,7 @@ func (q *LinkedBlockingQueue[E]) Clear() {
 	q.items.Clear()
 }
 
+// Peek returns the first element of the queue
 func (q *LinkedBlockingQueue[E]) Peek() (E, bool) {
 	if q.items.TryRLock() {
 		defer q.items.RUnlock()
@@ -70,6 +75,7 @@ func (q *LinkedBlockingQueue[E]) Peek() (E, bool) {
 	return q.items.First()
 }
 
+// TryEnqueue enqueues a new element into the queue, it will return false if the size is up to the capacity
 func (q *LinkedBlockingQueue[E]) TryEnqueue(value E) bool {
 	if q.items.TryLock() {
 		defer q.items.Unlock()
@@ -82,6 +88,8 @@ func (q *LinkedBlockingQueue[E]) TryEnqueue(value E) bool {
 	return true
 }
 
+// TryDequeue dequeues the first element of the queue and returns it.
+// The empty value of the element type and false will be returned when the queue is empty
 func (q *LinkedBlockingQueue[E]) TryDequeue() (E, bool) {
 	if q.items.TryLock() {
 		defer q.items.Unlock()
@@ -94,6 +102,7 @@ func (q *LinkedBlockingQueue[E]) TryDequeue() (E, bool) {
 	return value, ok
 }
 
+// Enqueue enqueues a new element into the queue, it will block if the size is up to capacity
 func (q *LinkedBlockingQueue[E]) Enqueue(value E) bool {
 	if q.items.TryLock() {
 		defer q.items.Unlock()
@@ -106,6 +115,7 @@ func (q *LinkedBlockingQueue[E]) Enqueue(value E) bool {
 	return true
 }
 
+// Dequeue dequeues the first element of queue, it will block if the queue is empty
 func (q *LinkedBlockingQueue[E]) Dequeue() (E, bool) {
 	if q.items.TryLock() {
 		defer q.items.Unlock()
@@ -118,6 +128,9 @@ func (q *LinkedBlockingQueue[E]) Dequeue() (E, bool) {
 	return value, ok
 }
 
+// EnqueueTimeout enqueues element into the queue.
+// It will block when the size of queue is up to capacity.
+// It will return true if the element is successfully enqueued or false when time is out
 func (q *LinkedBlockingQueue[E]) EnqueueTimeout(value E, duration time.Duration) bool {
 	var ok bool
 	catch.Try(func() {
@@ -143,6 +156,9 @@ func (q *LinkedBlockingQueue[E]) EnqueueTimeout(value E, duration time.Duration)
 	return ok
 }
 
+// DequeueTimeout removes the first element and returns it.
+// It will block when the queue is empty.
+// It will return zero value and false when time is out
 func (q *LinkedBlockingQueue[E]) DequeueTimeout(duration time.Duration) (E, bool) {
 	var value E
 	var ok bool
@@ -169,6 +185,7 @@ func (q *LinkedBlockingQueue[E]) DequeueTimeout(duration time.Duration) (E, bool
 	return value, ok
 }
 
+// Remove removes the specific element
 func (q *LinkedBlockingQueue[E]) Remove(value E) {
 	if q.items.TryLock() {
 		defer q.items.Unlock()
@@ -176,6 +193,7 @@ func (q *LinkedBlockingQueue[E]) Remove(value E) {
 	q.items.Remove(value)
 }
 
+// RemoveWhere removes elements which matches the callback
 func (q *LinkedBlockingQueue[E]) RemoveWhere(callback func(E) bool) {
 	if q.items.TryLock() {
 		defer q.items.Unlock()
@@ -183,6 +201,7 @@ func (q *LinkedBlockingQueue[E]) RemoveWhere(callback func(E) bool) {
 	q.items.RemoveWhere(callback)
 }
 
+// ToArray converts to array
 func (q *LinkedBlockingQueue[E]) ToArray() []E {
 	if q.items.TryRLock() {
 		defer q.items.RUnlock()
@@ -190,6 +209,7 @@ func (q *LinkedBlockingQueue[E]) ToArray() []E {
 	return q.items.ToArray()
 }
 
+// ToJSON converts to json
 func (q *LinkedBlockingQueue[E]) ToJSON() ([]byte, error) {
 	if q.items.TryRLock() {
 		defer q.items.RUnlock()
@@ -197,10 +217,12 @@ func (q *LinkedBlockingQueue[E]) ToJSON() ([]byte, error) {
 	return q.items.MarshalJSON()
 }
 
+// MarshalJSON implements [json.Marshaller]
 func (q *LinkedBlockingQueue[E]) MarshalJSON() ([]byte, error) {
 	return q.ToJSON()
 }
 
+// UnmarshalJSON implements [json.Unmarshaller]
 func (q *LinkedBlockingQueue[E]) UnmarshalJSON(data []byte) error {
 	if q.items.TryLock() {
 		defer q.items.Unlock()
@@ -219,6 +241,7 @@ func (q *LinkedBlockingQueue[E]) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+// String converts to string
 func (q *LinkedBlockingQueue[E]) String() string {
 	if q.items.TryRLock() {
 		defer q.items.RUnlock()

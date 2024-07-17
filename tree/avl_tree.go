@@ -17,25 +17,29 @@ func NewAVLTree[E any](comparator contract.Comparator[E], values ...E) *AVLTree[
 	return tree
 }
 
-// AVLTree avl true
+// AVLTree avl tree
 type AVLTree[E any] struct {
 	sync.Mutex
 	root       *avlNode[E]
 	comparator contract.Comparator[E]
 }
 
+// Count returns the size of tree
 func (t *AVLTree[E]) Count() int64 {
 	return int64(len(t.root.inOrderRange()))
 }
 
+// IsEmpty returns whether the tree is empty
 func (t *AVLTree[E]) IsEmpty() bool {
 	return t.Count() == 0
 }
 
+// IsNotEmpty returns whether the tree is not empty
 func (t *AVLTree[E]) IsNotEmpty() bool {
 	return t.Count() > 0
 }
 
+// Contains returns whether the tree contains the specific element
 func (t *AVLTree[E]) Contains(value E) bool {
 	if t.root == nil {
 		return false
@@ -46,12 +50,14 @@ func (t *AVLTree[E]) Contains(value E) bool {
 	return true
 }
 
+// Push pushes elements into the tree
 func (t *AVLTree[E]) Push(values ...E) {
 	for _, value := range values {
 		t.root = t.root.insert(value, t.comparator)
 	}
 }
 
+// Remove removes the specific element from the tree
 func (t *AVLTree[E]) Remove(value E) {
 	if t.root == nil {
 		return
@@ -59,10 +65,13 @@ func (t *AVLTree[E]) Remove(value E) {
 	t.root = t.root.remove(value, t.comparator)
 }
 
+// Clear clears the tree
 func (t *AVLTree[E]) Clear() {
 	t.root = nil
 }
 
+// First returns the first element of the tree.
+// It returns zero value and false when the tree is empty.
 func (t *AVLTree[E]) First() (E, bool) {
 	if t.root == nil {
 		return *new(E), false
@@ -70,6 +79,7 @@ func (t *AVLTree[E]) First() (E, bool) {
 	return t.root.min().value, true
 }
 
+// FirstOr returns the first element of the tree or the default value if the tree is empty
 func (t *AVLTree[E]) FirstOr(value E) E {
 	if t.root == nil {
 		return value
@@ -77,6 +87,8 @@ func (t *AVLTree[E]) FirstOr(value E) E {
 	return t.root.min().value
 }
 
+// Last returns the last element of the tree.
+// It returns zero value and false when the tree is empty
 func (t *AVLTree[E]) Last() (E, bool) {
 	if t.root == nil {
 		return *new(E), false
@@ -84,6 +96,7 @@ func (t *AVLTree[E]) Last() (E, bool) {
 	return t.root.max().value, true
 }
 
+// LastOr returns the last element of the tree or the default value if the tree is empty
 func (t *AVLTree[E]) LastOr(value E) E {
 	if t.root == nil {
 		return value
@@ -91,6 +104,7 @@ func (t *AVLTree[E]) LastOr(value E) E {
 	return t.root.max().value
 }
 
+// Each runs callback for each element, it breaks when callback returns false
 func (t *AVLTree[E]) Each(callback func(value E) bool) {
 	for _, node := range t.root.inOrderRange() {
 		if !callback(node.value) {
@@ -99,11 +113,13 @@ func (t *AVLTree[E]) Each(callback func(value E) bool) {
 	}
 }
 
+// Clone clones the tree
 func (t *AVLTree[E]) Clone() *AVLTree[E] {
-	avltree := NewAVLTree(t.comparator, t.ToArray()...)
-	return avltree
+	tt := NewAVLTree(t.comparator, t.ToArray()...)
+	return tt
 }
 
+// ToArray converts to array
 func (t *AVLTree[E]) ToArray() []E {
 	nodes := t.root.inOrderRange()
 	values := make([]E, 0, len(nodes))
@@ -113,14 +129,17 @@ func (t *AVLTree[E]) ToArray() []E {
 	return values
 }
 
+// ToJSON converts to json
 func (t *AVLTree[E]) ToJSON() ([]byte, error) {
 	return json.Marshal(t.ToArray())
 }
 
+// MarshalJSON implements [json.Marshaller]
 func (t *AVLTree[E]) MarshalJSON() ([]byte, error) {
 	return t.ToJSON()
 }
 
+// UnmarshalJSON implements [json.UnmarshalJSON]
 func (t *AVLTree[E]) UnmarshalJSON(data []byte) error {
 	values := make([]E, 0)
 	if err := json.Unmarshal(data, &values); err != nil {
@@ -131,6 +150,7 @@ func (t *AVLTree[E]) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+// String converts to string
 func (t *AVLTree[E]) String() string {
 	str := new(strings.Builder)
 	str.WriteString(fmt.Sprintf("AVLTree[%T](len=%d)", *new(E), t.Count()))

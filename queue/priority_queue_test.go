@@ -80,7 +80,7 @@ func TestPriorityQueue_MarshalJSON(t *testing.T) {
 }
 
 func TestPriorityQueue_UnmarshalJSON(t *testing.T) {
-	queue := NewPriorityQueue(_comparator{})
+	queue := NewPriorityQueue[int](_comparator{})
 	err := json.Unmarshal([]byte(`[1,2,3]`), queue)
 	assert.Nil(t, err)
 	assert.EqualValues(t, []int{1, 2, 3}, queue.ToArray())

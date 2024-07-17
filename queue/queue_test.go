@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"regexp"
+	"sync"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -39,11 +40,32 @@ func TestQueue_Peek(t *testing.T) {
 }
 
 func TestQueue_Enqueue(t *testing.T) {
-	queue := NewQueue(1, 2, 3)
-	ok := queue.Enqueue(4)
-	assert.True(t, ok)
-	assert.Equal(t, int64(4), queue.Count())
-	assert.EqualValues(t, []int{1, 2, 3, 4}, queue.ToArray())
+	t.Run("single-coroutine", func(t *testing.T) {
+		queue := NewQueue(1, 2, 3)
+		ok := queue.Enqueue(4)
+		assert.True(t, ok)
+		assert.Equal(t, int64(4), queue.Count())
+		assert.Equal(t, []int{1, 2, 3, 4}, queue.ToArray())
+	})
+
+	t.Run("multi-coroutines", func(t *testing.T) {
+		queue := NewQueue[int]()
+		var expected []int
+		var wg sync.WaitGroup
+		for i := 0; i < 10; i++ {
+			wg.Add(1)
+			expected = append(expected, i)
+			go func(i int) {
+				defer wg.Done()
+				if queue.TryLock() {
+					defer queue.Unlock()
+				}
+				queue.Enqueue(i)
+			}(i)
+		}
+		wg.Wait()
+		assert.ElementsMatch(t, expected, queue.ToArray())
+	})
 }
 
 func TestQueue_Dequeue(t *testing.T) {
@@ -80,4 +102,20 @@ func TestQueue_String(t *testing.T) {
 	str := queue.String()
 	pattern := regexp.MustCompile(fmt.Sprintf(`Queue\[int\]\(len=%d\)\{\n(\t\d+,\n){5}\t(\.){3}\n\}`, queue.Count()))
 	assert.True(t, pattern.Match([]byte(str)))
+}
+
+func TestQueue_Remove(t *testing.T) {
+	queue := NewQueue(1, 2, 3, 4, 5)
+	queue.Remove(1)
+	assert.Equal(t, int64(4), queue.Count())
+	assert.Equal(t, []int{2, 3, 4, 5}, queue.ToArray())
+}
+
+func TestQueue_RemoveWhere(t *testing.T) {
+	queue := NewQueue(1, 2, 3, 4, 5)
+	queue.RemoveWhere(func(value int) bool {
+		return value%2 == 1
+	})
+	assert.Equal(t, int64(2), queue.Count())
+	assert.Equal(t, []int{2, 4}, queue.ToArray())
 }

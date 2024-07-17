@@ -3,6 +3,7 @@ package queue
 import (
 	"encoding/json"
 	"fmt"
+	"reflect"
 	"strings"
 	"sync"
 	"time"
@@ -13,7 +14,7 @@ import (
 // NewDelayedQueue new delayed queue
 func NewDelayedQueue[Q contract.Delayable[T], T any]() *DelayedQueue[Q, T] {
 	queue := new(DelayedQueue[Q, T])
-	queue.items = NewPriorityQueue(queue)
+	queue.items = NewPriorityQueue[Q](queue)
 	queue.takeLock = sync.NewCond(queue.items)
 	return queue
 }
@@ -82,7 +83,7 @@ func (q *DelayedQueue[Q, T]) Enqueue(value Q) bool {
 	return ok
 }
 
-func (q *DelayedQueue[Q, T]) EnqueueTimeout(value Q, duration time.Duration) bool {
+func (q *DelayedQueue[Q, T]) EnqueueTimeout(value Q, _ time.Duration) bool {
 	return q.Enqueue(value)
 }
 
@@ -139,7 +140,9 @@ func (q *DelayedQueue[Q, T]) Remove(value Q) {
 	if q.items.TryLock() {
 		defer q.items.Unlock()
 	}
-	q.items.Remove(value)
+	q.RemoveWhere(func(v Q) bool {
+		return reflect.DeepEqual(v.Value(), value.Value()) && v.Until() == value.Until()
+	})
 }
 
 func (q *DelayedQueue[Q, T]) RemoveWhere(callback func(value Q) bool) {
@@ -171,7 +174,7 @@ func (q *DelayedQueue[Q, T]) UnmarshalJSON(data []byte) error {
 	if q.items.TryLock() {
 		defer q.items.Unlock()
 	}
-	items := []Q{}
+	var items []Q
 	err := json.Unmarshal(data, &items)
 	if err != nil {
 		return err

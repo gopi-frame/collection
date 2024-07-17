@@ -20,11 +20,11 @@ func (node *avlNode[E]) updateHeight() {
 	if node.right != nil {
 		rightHeight = node.right.height
 	}
-	max := leftHeight
+	m := leftHeight
 	if rightHeight > leftHeight {
-		max = rightHeight
+		m = rightHeight
 	}
-	node.height = max + 1
+	node.height = m + 1
 }
 
 func (node *avlNode[E]) drop() int {
@@ -149,15 +149,15 @@ func (node *avlNode[E]) remove(value E, comparator contract.Comparator[E]) *avlN
 		}
 		if node.left != nil && node.right != nil {
 			if node.left.height > node.right.height {
-				max := node.left.max()
-				node.value = max.value
-				node.count = max.count
-				node.left = node.left.remove(max.value, comparator)
+				m := node.left.max()
+				node.value = m.value
+				node.count = m.count
+				node.left = node.left.remove(m.value, comparator)
 			} else {
-				min := node.right.min()
-				node.value = min.value
-				node.count = min.count
-				node.right = node.right.remove(min.value, comparator)
+				m := node.right.min()
+				node.value = m.value
+				node.count = m.count
+				node.right = node.right.remove(m.value, comparator)
 			}
 		} else if node.left != nil {
 			node.value = node.left.value

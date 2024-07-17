@@ -130,9 +130,9 @@ func (node *rbNode[E]) remove(value E, comparator contract.Comparator[E]) *rbNod
 			activeNode = activeNode.moveRedRight()
 		}
 		if comparator.Compare(value, activeNode.value) == 0 {
-			min := activeNode.right.min()
-			activeNode.value = min.value
-			activeNode.count = min.count
+			m := activeNode.right.min()
+			activeNode.value = m.value
+			activeNode.count = m.count
 			activeNode.right = activeNode.right.removeMin()
 		} else {
 			activeNode.right = activeNode.right.remove(value, comparator)

@@ -43,28 +43,49 @@ func TestBlockingQueue_Clear(t *testing.T) {
 
 func TestBlockingQueue_Peek(t *testing.T) {
 	queue := NewBlockingQueue[int](5)
+	value, ok := queue.Peek()
+	assert.Equal(t, 0, value)
+	assert.False(t, ok)
+
 	for i := 0; i < 5; i++ {
 		queue.Enqueue(i)
 	}
-	value, ok := queue.Peek()
+	value, ok = queue.Peek()
 	assert.True(t, ok)
 	assert.Equal(t, 0, value)
 	assert.Equal(t, int64(5), queue.Count())
 }
 
 func TestBlockingQueue_TryEnqueue(t *testing.T) {
-	queue := NewBlockingQueue[int](5)
-	for i := 0; i < 5; i++ {
-		queue.Enqueue(i)
-	}
-	ok := queue.TryEnqueue(6)
-	assert.False(t, ok)
+	t.Run("full", func(t *testing.T) {
+		queue := NewBlockingQueue[int](5)
+		for i := 0; i < 5; i++ {
+			queue.Enqueue(i)
+		}
+		ok := queue.TryEnqueue(6)
+		assert.False(t, ok)
+		assert.Equal(t, int64(5), queue.Count())
+	})
+
+	t.Run("empty", func(t *testing.T) {
+		queue := NewBlockingQueue[int](5)
+		ok := queue.TryEnqueue(6)
+		assert.True(t, ok)
+		assert.Equal(t, int64(1), queue.Count())
+	})
 }
 
-func TestBlockingQUeue_TryDequeue(t *testing.T) {
+func TestBlockingQueue_TryDequeue(t *testing.T) {
 	queue := NewBlockingQueue[int](5)
 	_, ok := queue.TryDequeue()
 	assert.False(t, ok)
+
+	for i := 0; i < 5; i++ {
+		queue.Enqueue(i + 1)
+	}
+	value, ok := queue.TryDequeue()
+	assert.Equal(t, 1, value)
+	assert.True(t, ok)
 }
 
 func TestBlockingQueue_Enqueue(t *testing.T) {
@@ -160,4 +181,26 @@ func TestBlockingQueue_String(t *testing.T) {
 	str := queue.String()
 	pattern := regexp.MustCompile(fmt.Sprintf(`BlockingQueue\[int\]\(len=%d\)\{\n(\t\d+,\n){5}\}`, queue.Count()))
 	assert.True(t, pattern.Match([]byte(str)))
+}
+
+func TestBlockingQueue_Remove(t *testing.T) {
+	queue := NewBlockingQueue[int](5)
+	for i := 0; i < 5; i++ {
+		queue.Enqueue(i)
+	}
+	queue.Remove(3)
+	assert.Equal(t, int64(4), queue.Count())
+	assert.Equal(t, []int{0, 1, 2, 4}, queue.ToArray())
+}
+
+func TestBlockingQueue_RemoveWhere(t *testing.T) {
+	queue := NewBlockingQueue[int](5)
+	for i := 0; i < 5; i++ {
+		queue.Enqueue(i)
+	}
+	queue.RemoveWhere(func(i int) bool {
+		return i%2 == 1
+	})
+	assert.Equal(t, int64(3), queue.Count())
+	assert.Equal(t, []int{0, 2, 4}, queue.ToArray())
 }

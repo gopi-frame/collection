@@ -24,28 +24,28 @@ type Set[E comparable] struct {
 	elements map[E]struct{}
 }
 
-// Count count
+// Count returns the size of set
 func (s *Set[E]) Count() int64 {
 	return int64(len(s.elements))
 }
 
-// IsEmpty is empty
+// IsEmpty returns whether the set is empty
 func (s *Set[E]) IsEmpty() bool {
 	return s.Count() == 0
 }
 
-// IsNotEmpty is not empty
+// IsNotEmpty returns whether the set is not empty
 func (s *Set[E]) IsNotEmpty() bool {
 	return !s.IsEmpty()
 }
 
-// Contains contains
+// Contains returns whether the set contains the specific element
 func (s *Set[E]) Contains(value E) bool {
 	_, contains := s.elements[value]
 	return contains
 }
 
-// ContainsWhere comtains where
+// ContainsWhere returns whether the set contains elements which matches the callback
 func (s *Set[E]) ContainsWhere(callback func(E) bool) bool {
 	for item := range s.elements {
 		if callback(item) {
@@ -55,7 +55,7 @@ func (s *Set[E]) ContainsWhere(callback func(E) bool) bool {
 	return false
 }
 
-// Push push
+// Push pushes elements into the set
 func (s *Set[E]) Push(values ...E) {
 	for _, value := range values {
 		if s.Contains(value) {
@@ -65,12 +65,12 @@ func (s *Set[E]) Push(values ...E) {
 	}
 }
 
-// Remove remove
+// Remove removes the specific element
 func (s *Set[E]) Remove(value E) {
 	delete(s.elements, value)
 }
 
-// RemoveWhere remove where
+// RemoveWhere removes elements which matches the callback
 func (s *Set[E]) RemoveWhere(callback func(E) bool) {
 	items := map[E]struct{}{}
 	for item := range s.elements {
@@ -82,7 +82,7 @@ func (s *Set[E]) RemoveWhere(callback func(E) bool) {
 	s.elements = items
 }
 
-// Each each
+// Each runs callback for each element, it breaks when callback false
 func (s *Set[E]) Each(callback func(_ int, item E) bool) {
 	for item := range s.elements {
 		if !callback(-1, item) {
@@ -91,38 +91,40 @@ func (s *Set[E]) Each(callback func(_ int, item E) bool) {
 	}
 }
 
-// Clear clear
+// Clear clears the set
 func (s *Set[E]) Clear() {
 	s.elements = map[E]struct{}{}
 }
 
-// Clone clone
+// Clone clones the set
 func (s *Set[E]) Clone() *Set[E] {
 	return &Set[E]{
 		elements: s.elements,
 	}
 }
 
-// ToArray to array
+// ToArray converts to array
 func (s *Set[E]) ToArray() []E {
-	values := []E{}
+	var values []E
 	for item := range s.elements {
 		values = append(values, item)
 	}
 	return values
 }
 
-// ToJSON to json
+// ToJSON converts to json
 func (s *Set[E]) ToJSON() ([]byte, error) {
 	return json.Marshal(s.ToArray())
 }
 
+// MarshalJSON implements [json.Marshaller]
 func (s *Set[E]) MarshalJSON() ([]byte, error) {
 	return s.ToJSON()
 }
 
+// UnmarshalJSON implements [json.Unmarshaller]
 func (s *Set[E]) UnmarshalJSON(data []byte) error {
-	var items = []E{}
+	var items []E
 	err := json.Unmarshal(data, &items)
 	if err != nil {
 		return err
@@ -132,6 +134,7 @@ func (s *Set[E]) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+// String converts to string
 func (s *Set[E]) String() string {
 	str := new(strings.Builder)
 	str.WriteString(fmt.Sprintf("Set[%T](len=%d)", *new(E), len(s.elements)))

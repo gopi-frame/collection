@@ -59,6 +59,9 @@ func TestList_FirstOr(t *testing.T) {
 	list := NewList[int]()
 	value := list.FirstOr(10)
 	assert.Equal(t, 10, value)
+	list.Push(1)
+	value = list.FirstOr(10)
+	assert.Equal(t, 1, value)
 }
 
 func TestList_FirstWhere(t *testing.T) {
@@ -68,6 +71,12 @@ func TestList_FirstWhere(t *testing.T) {
 	})
 	assert.Equal(t, 3, value)
 	assert.True(t, ok)
+
+	value, ok = list.FirstWhere(func(item int) bool {
+		return item == 2
+	})
+	assert.Equal(t, 2, value)
+	assert.True(t, ok)
 }
 
 func TestList_FirstWhereOr(t *testing.T) {
@@ -76,6 +85,12 @@ func TestList_FirstWhereOr(t *testing.T) {
 		return item == 3
 	}, 3)
 	assert.Equal(t, 3, value)
+
+	list.Push(1, 2, 3)
+	value = list.FirstWhereOr(func(item int) bool {
+		return item >= 2
+	}, 10)
+	assert.Equal(t, 2, value)
 }
 
 func TestList_Last(t *testing.T) {
@@ -89,6 +104,9 @@ func TestList_LastOr(t *testing.T) {
 	list := NewList[int]()
 	value := list.LastOr(1)
 	assert.Equal(t, 1, value)
+	list.Push(1, 2, 3)
+	value = list.LastOr(2)
+	assert.Equal(t, 3, value)
 }
 
 func TestList_LastWhere(t *testing.T) {
@@ -106,11 +124,21 @@ func TestList_LastWhereOr(t *testing.T) {
 		return item == 4
 	}, 10)
 	assert.Equal(t, 10, value)
+
+	value = list.LastWhereOr(func(item int) bool {
+		return item >= 2
+	}, 10)
+	assert.Equal(t, 3, value)
 }
 
 func TestList_Pop(t *testing.T) {
-	list := NewList(1, 2, 3)
+	list := NewList[int]()
 	value, ok := list.Pop()
+	assert.Equal(t, 0, value)
+	assert.False(t, ok)
+
+	list.Push(1, 2, 3)
+	value, ok = list.Pop()
 	assert.Equal(t, 3, value)
 	assert.True(t, ok)
 	assert.EqualValues(t, 2, list.Count())
@@ -118,8 +146,13 @@ func TestList_Pop(t *testing.T) {
 }
 
 func TestList_Shift(t *testing.T) {
-	list := NewList(1, 2, 3)
+	list := NewList[int]()
 	value, ok := list.Shift()
+	assert.Equal(t, 0, value)
+	assert.False(t, ok)
+
+	list.Push(1, 2, 3)
+	value, ok = list.Shift()
 	assert.Equal(t, 1, value)
 	assert.True(t, ok)
 	assert.EqualValues(t, 2, list.Count())

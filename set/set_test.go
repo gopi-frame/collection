@@ -58,15 +58,15 @@ func TestSet_RemoveWhere(t *testing.T) {
 
 func TestSet_Each(t *testing.T) {
 	set := NewSet[int](1, 2, 3)
-	items := []int{}
+	var items []int
 	set.Each(func(_ int, item int) bool {
 		items = append(items, int(item))
 		return true
 	})
-	assert.Equal(t, []int{1, 2, 3}, items)
+	assert.ElementsMatch(t, []int{1, 2, 3}, items)
 }
 
-func TestSet_Cleaar(t *testing.T) {
+func TestSet_Clear(t *testing.T) {
 	set := NewSet[int](1, 2, 3)
 	assert.True(t, set.IsNotEmpty())
 	set.Clear()
@@ -81,21 +81,31 @@ func TestSet_Clone(t *testing.T) {
 
 func TestSet_ToArray(t *testing.T) {
 	set := NewSet[int](1, 2, 3)
-	assert.Equal(t, []int{1, 2, 3}, set.ToArray())
+	assert.ElementsMatch(t, []int{1, 2, 3}, set.ToArray())
 }
 
 func TestSet_ToJSON(t *testing.T) {
 	set := NewSet[int](1, 2, 3)
 	jsonBytes, err := set.ToJSON()
 	assert.Nil(t, err)
-	assert.JSONEq(t, `[1,2,3]`, string(jsonBytes))
+	var items []int
+	err = json.Unmarshal(jsonBytes, &items)
+	if err != nil {
+		assert.FailNow(t, err.Error())
+	}
+	assert.ElementsMatch(t, []int{1, 2, 3}, items)
 }
 
 func TestSet_MarshalJSON(t *testing.T) {
 	set := NewSet[int](1, 2, 3)
-	jsonBytes, err := set.MarshalJSON()
+	jsonBytes, err := set.ToJSON()
 	assert.Nil(t, err)
-	assert.JSONEq(t, `[1,2,3]`, string(jsonBytes))
+	var items []int
+	err = json.Unmarshal(jsonBytes, &items)
+	if err != nil {
+		assert.FailNow(t, err.Error())
+	}
+	assert.ElementsMatch(t, []int{1, 2, 3}, items)
 }
 
 func TestSet_UnmarshalJSON(t *testing.T) {

@@ -3,6 +3,7 @@ package list
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/gopi-frame/exception"
 	"regexp"
 	"testing"
 
@@ -40,6 +41,9 @@ func TestLinkedList_Clear(t *testing.T) {
 func TestLinkedList_Get(t *testing.T) {
 	list := NewLinkedList(1, 2, 3)
 	assert.Equal(t, 2, list.Get(1))
+	assert.PanicsWithError(t, exception.NewRangeException(0, 2).Error(), func() {
+		list.Get(3)
+	})
 }
 
 func TestLinkedList_Set(t *testing.T) {
@@ -49,8 +53,12 @@ func TestLinkedList_Set(t *testing.T) {
 }
 
 func TestLinkedList_First(t *testing.T) {
-	list := NewLinkedList(1, 2, 3)
+	list := NewLinkedList[int]()
 	value, ok := list.First()
+	assert.Equal(t, 0, value)
+	assert.False(t, ok)
+	list.Push(1, 2, 3)
+	value, ok = list.First()
 	assert.Equal(t, 1, value)
 	assert.True(t, ok)
 }
@@ -59,6 +67,9 @@ func TestLinkedList_FirstOr(t *testing.T) {
 	list := NewLinkedList[int]()
 	value := list.FirstOr(10)
 	assert.Equal(t, 10, value)
+	list.Push(0, 1, 2)
+	value = list.FirstOr(10)
+	assert.Equal(t, 0, value)
 }
 
 func TestLinkedList_FirstWhere(t *testing.T) {
@@ -68,19 +79,32 @@ func TestLinkedList_FirstWhere(t *testing.T) {
 	})
 	assert.Equal(t, 3, value)
 	assert.True(t, ok)
+	value, ok = list.FirstWhere(func(item int) bool {
+		return item > 10
+	})
+	assert.Equal(t, 0, value)
+	assert.False(t, ok)
 }
 
 func TestLinkedList_FirstWhereOr(t *testing.T) {
-	list := NewLinkedList(1, 2)
+	list := NewLinkedList(1, 2, 3)
 	value := list.FirstWhereOr(func(item int) bool {
-		return item == 3
-	}, 3)
-	assert.Equal(t, 3, value)
+		return item > 10
+	}, 10)
+	assert.Equal(t, 10, value)
+	value = list.FirstWhereOr(func(item int) bool {
+		return item >= 2
+	}, 10)
+	assert.Equal(t, 2, value)
 }
 
 func TestLinkedList_Last(t *testing.T) {
-	list := NewLinkedList(1, 2, 3)
+	list := NewLinkedList[int]()
 	value, ok := list.Last()
+	assert.Equal(t, 0, value)
+	assert.False(t, ok)
+	list.Push(1, 2, 3)
+	value, ok = list.Last()
 	assert.Equal(t, 3, value)
 	assert.True(t, ok)
 }
@@ -89,6 +113,9 @@ func TestLinkedList_LastOr(t *testing.T) {
 	list := NewLinkedList[int]()
 	value := list.LastOr(1)
 	assert.Equal(t, 1, value)
+	list.Push(1, 2, 3)
+	value = list.LastOr(2)
+	assert.Equal(t, 3, value)
 }
 
 func TestLinkedList_LastWhere(t *testing.T) {
@@ -98,6 +125,11 @@ func TestLinkedList_LastWhere(t *testing.T) {
 	})
 	assert.Equal(t, 3, value)
 	assert.True(t, ok)
+	value, ok = list.LastWhere(func(item int) bool {
+		return item > 10
+	})
+	assert.Equal(t, 0, value)
+	assert.False(t, ok)
 }
 
 func TestLinkedList_LastWhereOr(t *testing.T) {
@@ -106,11 +138,19 @@ func TestLinkedList_LastWhereOr(t *testing.T) {
 		return item == 4
 	}, 10)
 	assert.Equal(t, 10, value)
+	value = list.LastWhereOr(func(item int) bool {
+		return item >= 2
+	}, 10)
+	assert.Equal(t, 3, value)
 }
 
 func TestLinkedList_Pop(t *testing.T) {
-	list := NewLinkedList(1, 2, 3)
+	list := NewLinkedList[int]()
 	value, ok := list.Pop()
+	assert.Equal(t, 0, value)
+	assert.False(t, ok)
+	list.Push(1, 2, 3)
+	value, ok = list.Pop()
 	assert.Equal(t, 3, value)
 	assert.True(t, ok)
 	assert.EqualValues(t, 2, list.Count())
@@ -118,8 +158,13 @@ func TestLinkedList_Pop(t *testing.T) {
 }
 
 func TestLinkedList_Shift(t *testing.T) {
-	list := NewLinkedList(1, 2, 3)
+	list := NewLinkedList[int]()
 	value, ok := list.Shift()
+	assert.Equal(t, 0, value)
+	assert.False(t, ok)
+
+	list.Push(1, 2, 3)
+	value, ok = list.Shift()
 	assert.Equal(t, 1, value)
 	assert.True(t, ok)
 	assert.EqualValues(t, 2, list.Count())
@@ -127,7 +172,7 @@ func TestLinkedList_Shift(t *testing.T) {
 }
 
 func TestLinkedList_Unshift(t *testing.T) {
-	list := NewLinkedList(1, 2, 3)
+	list := NewLinkedList[int](1, 2, 3)
 	list.Unshift(0)
 	assert.Equal(t, 0, list.Get(0))
 	assert.EqualValues(t, 4, list.Count())
@@ -141,6 +186,7 @@ func TestLinkedList_IndexOf(t *testing.T) {
 func TestLinkedList_IndexOfWhere(t *testing.T) {
 	list := NewLinkedList(1, 2, 3)
 	assert.Equal(t, 2, list.IndexOfWhere(func(item int) bool { return item == 3 }))
+	assert.Equal(t, -1, list.IndexOfWhere(func(item int) bool { return item > 10 }))
 }
 
 func TestLinkedList_Sub(t *testing.T) {
@@ -157,9 +203,17 @@ func TestLinkedList_Where(t *testing.T) {
 }
 
 func TestLinkedList_Compact(t *testing.T) {
-	list := NewLinkedList(1, 1, 1, 2, 3, 1, 1)
-	list.Compact(nil)
-	assert.Equal(t, []int{1, 2, 3, 1}, list.ToArray())
+	t.Run("size gte 2", func(t *testing.T) {
+		list := NewLinkedList(1, 1, 1, 2, 3, 1, 1)
+		list.Compact(nil)
+		assert.Equal(t, []int{1, 2, 3, 1}, list.ToArray())
+	})
+
+	t.Run("size lt 2", func(t *testing.T) {
+		list := NewLinkedList(1)
+		list.Compact(nil)
+		assert.Equal(t, []int{1}, list.ToArray())
+	})
 }
 
 func TestLinkedList_Min(t *testing.T) {

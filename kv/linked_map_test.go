@@ -61,6 +61,9 @@ func TestLinkedMap_FirstOr(t *testing.T) {
 	m := NewLinkedMap[int, int]()
 	v := m.FirstOr(10)
 	assert.Equal(t, 10, v)
+	m.Set(0, 1)
+	v = m.FirstOr(10)
+	assert.Equal(t, 1, v)
 }
 
 func TestLinkedMap_Last(t *testing.T) {
@@ -77,6 +80,9 @@ func TestLinkedMap_LastOr(t *testing.T) {
 	m := NewLinkedMap[int, int]()
 	v := m.LastOr(10)
 	assert.Equal(t, 10, v)
+	m.Set(0, 1)
+	v = m.LastOr(10)
+	assert.Equal(t, 1, v)
 }
 
 func TestLinkedMap_Keys(t *testing.T) {
@@ -110,6 +116,7 @@ func TestLinkedMap_ContainsKey(t *testing.T) {
 	m.Set(1, 1)
 	m.Set(2, 2)
 	assert.True(t, m.ContainsKey(0))
+	assert.False(t, m.ContainsKey(10))
 }
 
 func TestLinkedMap_Contains(t *testing.T) {
@@ -118,6 +125,7 @@ func TestLinkedMap_Contains(t *testing.T) {
 	m.Set(1, 1)
 	m.Set(2, 2)
 	assert.True(t, m.Contains(0))
+	assert.False(t, m.Contains(10))
 }
 
 func TestLinkedMap_ContainsWhere(t *testing.T) {
@@ -128,6 +136,7 @@ func TestLinkedMap_ContainsWhere(t *testing.T) {
 	assert.True(t, m.ContainsWhere(func(value int) bool {
 		return value == 2
 	}))
+	assert.False(t, m.ContainsWhere(func(value int) bool { return value < 0 }))
 }
 
 func TestLinkedMap_Each(t *testing.T) {
@@ -135,7 +144,7 @@ func TestLinkedMap_Each(t *testing.T) {
 	m.Set(0, 0)
 	m.Set(1, 1)
 	m.Set(2, 2)
-	items := []int{}
+	var items []int
 	m.Each(func(key, value int) bool {
 		items = append(items, value)
 		return value < 1
@@ -192,4 +201,14 @@ func TestLinkedMap_Clone(t *testing.T) {
 	assert.EqualValues(t, map[int]int{
 		0: 0, 1: 1, 2: 2,
 	}, m2.ToMap())
+}
+
+func TestLinkedMap_Reverse(t *testing.T) {
+	m := NewLinkedMap[int, int]()
+	m.Set(0, 0)
+	m.Set(1, 1)
+	m.Set(2, 2)
+	m.Reverse()
+	values := m.Values()
+	assert.Equal(t, []int{2, 1, 0}, values)
 }

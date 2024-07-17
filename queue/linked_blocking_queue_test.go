@@ -161,3 +161,25 @@ func TestLinkedBlockingQueue_String(t *testing.T) {
 	pattern := regexp.MustCompile(fmt.Sprintf(`LinkedBlockingQueue\[int\]\(len=%d\)\{\n(\t\d+,\n){5}\}`, queue.Count()))
 	assert.True(t, pattern.Match([]byte(str)))
 }
+
+func TestLinkedBlockingQueue_Remove(t *testing.T) {
+	queue := NewLinkedBlockingQueue[int](5)
+	for i := 0; i < 5; i++ {
+		queue.Enqueue(i)
+	}
+	queue.Remove(2)
+	assert.Equal(t, int64(4), queue.Count())
+	assert.Equal(t, []int{0, 1, 3, 4}, queue.ToArray())
+}
+
+func TestLinkedBlockingQueue_RemoveWhere(t *testing.T) {
+	queue := NewLinkedBlockingQueue[int](5)
+	for i := 0; i < 5; i++ {
+		queue.Enqueue(i)
+	}
+	queue.RemoveWhere(func(i int) bool {
+		return i%2 == 0
+	})
+	assert.Equal(t, int64(2), queue.Count())
+	assert.Equal(t, []int{1, 3}, queue.ToArray())
+}

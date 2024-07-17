@@ -37,23 +37,28 @@ func (q *PriorityQueue[E]) swap(i, j int64) {
 	q.items[i], q.items[j] = q.items[j], q.items[i]
 }
 
+// Count returns the size of queue
 func (q *PriorityQueue[E]) Count() int64 {
 	return q.size
 }
 
+// IsEmpty returns whether the queue is empty
 func (q *PriorityQueue[E]) IsEmpty() bool {
 	return q.Count() == 0
 }
 
+// IsNotEmpty returns whether the queue is not empty
 func (q *PriorityQueue[E]) IsNotEmpty() bool {
 	return !q.IsEmpty()
 }
 
+// Clear clears the queue
 func (q *PriorityQueue[E]) Clear() {
 	q.items = make([]E, 0)
 	q.size = 0
 }
 
+// Peek returns the first element of the queue
 func (q *PriorityQueue[E]) Peek() (E, bool) {
 	if q.size == 0 {
 		return *new(E), false
@@ -61,6 +66,7 @@ func (q *PriorityQueue[E]) Peek() (E, bool) {
 	return q.items[0], true
 }
 
+// Enqueue enqueues a new element into the queue, it will block if the size is up to capacity
 func (q *PriorityQueue[E]) Enqueue(value E) bool {
 	q.items = append(q.items, value)
 	q.size++
@@ -70,6 +76,7 @@ func (q *PriorityQueue[E]) Enqueue(value E) bool {
 	return true
 }
 
+// Dequeue dequeues the first element of queue, it will block if the queue is empty
 func (q *PriorityQueue[E]) Dequeue() (value E, ok bool) {
 	if q.size == 0 {
 		return *new(E), false
@@ -99,29 +106,35 @@ func (q *PriorityQueue[E]) Dequeue() (value E, ok bool) {
 	return
 }
 
+// Remove removes the specific element
 func (q *PriorityQueue[E]) Remove(value E) {
 	q.RemoveWhere(func(e E) bool {
 		return reflect.DeepEqual(e, value)
 	})
 }
 
+// RemoveWhere removes elements which matches the callback
 func (q *PriorityQueue[E]) RemoveWhere(callback func(E) bool) {
 	q.items = slices.DeleteFunc(q.items, callback)
 	q.size = int64(len(q.items))
 }
 
+// ToArray converts to array
 func (q *PriorityQueue[E]) ToArray() []E {
 	return q.items
 }
 
+// ToJSON converts to json
 func (q *PriorityQueue[E]) ToJSON() ([]byte, error) {
 	return json.Marshal(q.ToArray())
 }
 
+// MarshalJSON implements [json.Marshaller]
 func (q *PriorityQueue[E]) MarshalJSON() ([]byte, error) {
 	return q.ToJSON()
 }
 
+// UnmarshalJSON implements [json.Unmarshaller]
 func (q *PriorityQueue[E]) UnmarshalJSON(data []byte) error {
 	items := []E{}
 	err := json.Unmarshal(data, &items)
@@ -135,6 +148,7 @@ func (q *PriorityQueue[E]) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+// String converts to string
 func (q *PriorityQueue[E]) String() string {
 	str := new(strings.Builder)
 	str.WriteString(fmt.Sprintf("PriorityQueue[%T](len=%d)", *new(E), q.Count()))
