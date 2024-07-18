@@ -11,7 +11,7 @@ import (
 	"github.com/gopi-frame/contract"
 	"github.com/gopi-frame/exception"
 	"github.com/gopi-frame/future"
-	"github.com/gopi-frame/utils/catch"
+	"github.com/gopi-frame/util/catch"
 )
 
 // NewLinkedBlockingQueue new linked blocking queue
