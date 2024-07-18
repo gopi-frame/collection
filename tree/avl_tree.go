@@ -19,7 +19,7 @@ func NewAVLTree[E any](comparator contract.Comparator[E], values ...E) *AVLTree[
 
 // AVLTree avl tree
 type AVLTree[E any] struct {
-	sync.Mutex
+	sync.RWMutex
 	root       *avlNode[E]
 	comparator contract.Comparator[E]
 }
@@ -105,9 +105,9 @@ func (t *AVLTree[E]) LastOr(value E) E {
 }
 
 // Each runs callback for each element, it breaks when callback returns false
-func (t *AVLTree[E]) Each(callback func(value E) bool) {
-	for _, node := range t.root.inOrderRange() {
-		if !callback(node.value) {
+func (t *AVLTree[E]) Each(callback func(_ int, value E) bool) {
+	for index, node := range t.root.inOrderRange() {
+		if !callback(index, node.value) {
 			break
 		}
 	}

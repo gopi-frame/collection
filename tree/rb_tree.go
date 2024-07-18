@@ -19,7 +19,7 @@ func NewRBTree[E any](comparator contract.Comparator[E], values ...E) *RBTree[E]
 
 // RBTree red black tree
 type RBTree[E any] struct {
-	sync.Mutex
+	sync.RWMutex
 	root       *rbNode[E]
 	comparator contract.Comparator[E]
 }
@@ -112,9 +112,9 @@ func (t *RBTree[E]) LastOr(value E) E {
 	return v
 }
 
-func (t *RBTree[E]) Each(callback func(value E) bool) {
-	for _, node := range t.root.inOrderRange() {
-		if !callback(node.value) {
+func (t *RBTree[E]) Each(callback func(_ int, value E) bool) {
+	for index, node := range t.root.inOrderRange() {
+		if !callback(index, node.value) {
 			break
 		}
 	}

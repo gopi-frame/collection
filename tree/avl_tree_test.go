@@ -27,7 +27,7 @@ func TestAVLTree_Count(t *testing.T) {
 }
 
 func TestAVLTree_IsEmpty(t *testing.T) {
-	tree := NewAVLTree(_cmp{})
+	tree := NewAVLTree[int](_cmp{})
 	assert.True(t, tree.IsEmpty())
 }
 
@@ -66,7 +66,7 @@ func TestAVLTree_First(t *testing.T) {
 }
 
 func TestAVLTree_FirstOr(t *testing.T) {
-	tree := NewAVLTree(_cmp{})
+	tree := NewAVLTree[int](_cmp{})
 	v := tree.FirstOr(1)
 	assert.Equal(t, 1, v)
 }
@@ -79,15 +79,15 @@ func TestAVLTree_Last(t *testing.T) {
 }
 
 func TestAVLTree_LastOr(t *testing.T) {
-	tree := NewAVLTree(_cmp{})
+	tree := NewAVLTree[int](_cmp{})
 	v := tree.LastOr(1)
 	assert.Equal(t, 1, v)
 }
 
 func TestAVLTree_Each(t *testing.T) {
 	tree := NewAVLTree(_cmp{}, 1, 2, 3, 5, 2)
-	items := []int{}
-	tree.Each(func(value int) bool {
+	var items []int
+	tree.Each(func(_ int, value int) bool {
 		items = append(items, value)
 		return value < 2
 	})
@@ -120,7 +120,7 @@ func TestAVLTree_MarshalJSON(t *testing.T) {
 }
 
 func TestAVLTree_UnmarshalJSON(t *testing.T) {
-	tree := NewAVLTree(_cmp{})
+	tree := NewAVLTree[int](_cmp{})
 	err := json.Unmarshal([]byte(`[1,2,2,3,4]`), tree)
 	assert.Nil(t, err)
 	assert.Equal(t, []int{1, 2, 2, 3, 4}, tree.ToArray())
