@@ -40,7 +40,7 @@ func TestLinkedQueue_Peek(t *testing.T) {
 }
 
 func TestLinkedQueue_Enqueue(t *testing.T) {
-	t.Run("single-coroutine", func(t *testing.T) {
+	t.Run("standalone-coroutine", func(t *testing.T) {
 		queue := NewLinkedQueue(1, 2, 3)
 		ok := queue.Enqueue(4)
 		assert.True(t, ok)
@@ -60,7 +60,7 @@ func TestLinkedQueue_Enqueue(t *testing.T) {
 			expected = append(expected, i)
 			go func(i int) {
 				defer wg.Done()
-				queue.Enqueue(i)
+				assert.True(t, queue.Enqueue(i))
 			}(i)
 		}
 		wg.Wait()

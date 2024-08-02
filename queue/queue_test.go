@@ -3,11 +3,10 @@ package queue
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/stretchr/testify/assert"
 	"regexp"
 	"sync"
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 )
 
 func TestQueue_Count(t *testing.T) {
@@ -40,7 +39,7 @@ func TestQueue_Peek(t *testing.T) {
 }
 
 func TestQueue_Enqueue(t *testing.T) {
-	t.Run("single-coroutine", func(t *testing.T) {
+	t.Run("standalone-coroutine", func(t *testing.T) {
 		queue := NewQueue(1, 2, 3)
 		ok := queue.Enqueue(4)
 		assert.True(t, ok)
@@ -51,16 +50,15 @@ func TestQueue_Enqueue(t *testing.T) {
 	t.Run("multi-coroutines", func(t *testing.T) {
 		queue := NewQueue[int]()
 		var expected []int
-		var wg sync.WaitGroup
+		var wg = new(sync.WaitGroup)
 		for i := 0; i < 10; i++ {
 			wg.Add(1)
 			expected = append(expected, i)
 			go func(i int) {
-				defer wg.Done()
-				if queue.TryLock() {
-					defer queue.Unlock()
-				}
-				queue.Enqueue(i)
+				queue.Lock()
+				assert.True(t, queue.Enqueue(i))
+				queue.Unlock()
+				wg.Done()
 			}(i)
 		}
 		wg.Wait()

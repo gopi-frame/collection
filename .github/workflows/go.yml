@@ -1,0 +1,23 @@
+name: go.yml
+on: [push, pull_request]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: "1.22"
+
+      - name: Test with coverage report
+        run: go test -v -coverprofile=coverage.txt ./...
+
+      - name: Install goveralls
+        run: go install github.com/mattn/goveralls@latest
+
+      - name: Send coverage
+        env:
+          COVERALLS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: goveralls -coverprofile=covprofile -service=github

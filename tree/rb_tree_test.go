@@ -15,7 +15,7 @@ func TestRBTree_Count(t *testing.T) {
 }
 
 func TestRBTree_IsEmpty(t *testing.T) {
-	tree := NewRBTree(_cmp{})
+	tree := NewRBTree[int](_cmp{})
 	assert.True(t, tree.IsEmpty())
 }
 
@@ -54,7 +54,7 @@ func TestRBTree_First(t *testing.T) {
 }
 
 func TestRBTree_FirstOr(t *testing.T) {
-	tree := NewRBTree(_cmp{})
+	tree := NewRBTree[int](_cmp{})
 	v := tree.FirstOr(1)
 	assert.Equal(t, 1, v)
 }
@@ -67,15 +67,15 @@ func TestRBTree_Last(t *testing.T) {
 }
 
 func TestRBTree_LastOr(t *testing.T) {
-	tree := NewRBTree(_cmp{})
+	tree := NewRBTree[int](_cmp{})
 	v := tree.LastOr(1)
 	assert.Equal(t, 1, v)
 }
 
 func TestRBTree_Each(t *testing.T) {
 	tree := NewRBTree(_cmp{}, 1, 2, 3, 5, 2)
-	items := []int{}
-	tree.Each(func(value int) bool {
+	var items []int
+	tree.Each(func(_ int, value int) bool {
 		items = append(items, value)
 		return value < 2
 	})
@@ -108,7 +108,7 @@ func TestRBTree_MarshalJSON(t *testing.T) {
 }
 
 func TestRBTree_UnmarshalJSON(t *testing.T) {
-	tree := NewRBTree(_cmp{})
+	tree := NewRBTree[int](_cmp{})
 	err := json.Unmarshal([]byte(`[1,2,2,3,4]`), tree)
 	assert.Nil(t, err)
 	assert.Equal(t, []int{1, 2, 2, 3, 4}, tree.ToArray())
