@@ -1,5 +1,10 @@
 # collection
 
+[![Go Reference](https://pkg.go.dev/badge/github.com/gopi-frame/collection.svg)](https://pkg.go.dev/github.com/gopi-frame/collection)
+[![Go](https://github.com/gopi-frame/collection/actions/workflows/go.yml/badge.svg?branch=main)](https://github.com/gopi-frame/collection/actions/workflows/go.yml)
+[![codecov](https://codecov.io/gh/gopi-frame/collection/graph/badge.svg?token=UGVGP6QF5O)](https://codecov.io/gh/gopi-frame/collection)
+[![Go Report Card](https://goreportcard.com/badge/github.com/gopi-frame/collection)](https://goreportcard.com/report/github.com/gopi-frame/collection)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 ## Installation
 ```go
 go get -u -v github.com/gopi-frame/collection
