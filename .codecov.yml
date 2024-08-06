@@ -41,3 +41,6 @@ flag_management:
     - name: tree
       paths:
         - tree
+
+ignore:
+  - tree/*_node.go
