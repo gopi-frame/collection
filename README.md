@@ -5,6 +5,7 @@
 [![codecov](https://codecov.io/gh/gopi-frame/collection/graph/badge.svg?token=UGVGP6QF5O)](https://codecov.io/gh/gopi-frame/collection)
 [![Go Report Card](https://goreportcard.com/badge/github.com/gopi-frame/collection)](https://goreportcard.com/report/github.com/gopi-frame/collection)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fgopi-frame%2Fcollection.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fgopi-frame%2Fcollection?ref=badge_shield)
 ## Installation
 ```go
 go get -u -v github.com/gopi-frame/collection
@@ -509,3 +510,6 @@ func main() {
 	wg.Wait()
 }
 ```
+
+## License
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fgopi-frame%2Fcollection.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fgopi-frame%2Fcollection?ref=badge_large)
