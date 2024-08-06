@@ -24,4 +24,4 @@ jobs:
           files: ./coverage.out
           fail_ci_if_error: true
           verbose: true
-          codecov_yml_path: ./.codecov.yaml
+          codecov_yml_path: ./codecov.yml
