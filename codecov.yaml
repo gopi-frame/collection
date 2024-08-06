@@ -22,7 +22,7 @@ comment:
   behavior: default
   require_changes: false
 
-flag_managemant:
+flag_management:
   default_rules:
     carryforward: false
   list:
