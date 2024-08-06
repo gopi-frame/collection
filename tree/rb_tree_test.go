@@ -25,18 +25,32 @@ func TestRBTree_IsNotEmpty(t *testing.T) {
 }
 
 func TestRBTree_Contains(t *testing.T) {
-	tree := NewRBTree(_cmp{}, 1, 2, 3)
-	ok := tree.Contains(1)
-	assert.True(t, ok)
+	t.Run("empty tree", func(t *testing.T) {
+		tree := NewRBTree[int](_cmp{})
+		ok := tree.Contains(1)
+		assert.False(t, ok)
+	})
+
+	t.Run("non-empty tree", func(t *testing.T) {
+		tree := NewRBTree(_cmp{}, 1, 2, 3)
+		ok := tree.Contains(1)
+		assert.True(t, ok)
+	})
 }
 
 func TestRBTree_Remove(t *testing.T) {
-	tree := NewRBTree(_cmp{}, 1, 2, 3)
-	ok := tree.Contains(1)
-	assert.True(t, ok)
-	tree.Remove(1)
-	ok = tree.Contains(1)
-	assert.False(t, ok)
+	t.Run("empty tree", func(t *testing.T) {
+		tree := NewRBTree[int](_cmp{})
+		tree.Remove(1)
+		assert.Equal(t, int64(0), tree.Count())
+	})
+
+	t.Run("non-empty tree", func(t *testing.T) {
+		tree := NewRBTree(_cmp{}, 1, 2, 3)
+		tree.Remove(1)
+		assert.Equal(t, int64(2), tree.Count())
+		assert.False(t, tree.Contains(1))
+	})
 }
 
 func TestRBTree_Clear(t *testing.T) {
@@ -47,29 +61,63 @@ func TestRBTree_Clear(t *testing.T) {
 }
 
 func TestRBTree_First(t *testing.T) {
-	tree := NewRBTree(_cmp{}, 2, 1, 3, 0)
-	v, ok := tree.First()
-	assert.True(t, ok)
-	assert.Equal(t, 0, v)
+	t.Run("empty tree", func(t *testing.T) {
+		tree := NewRBTree[int](_cmp{})
+		v, ok := tree.First()
+		assert.False(t, ok)
+		assert.Equal(t, 0, v)
+	})
+
+	t.Run("non-empty tree", func(t *testing.T) {
+		tree := NewRBTree(_cmp{}, 1, 2, 3)
+		v, ok := tree.First()
+		assert.True(t, ok)
+		assert.Equal(t, 1, v)
+	})
 }
 
 func TestRBTree_FirstOr(t *testing.T) {
-	tree := NewRBTree[int](_cmp{})
-	v := tree.FirstOr(1)
-	assert.Equal(t, 1, v)
+	t.Run("empty tree", func(t *testing.T) {
+		tree := NewRBTree[int](_cmp{})
+		v := tree.FirstOr(1)
+		assert.Equal(t, 1, v)
+	})
+
+	t.Run("non-empty tree", func(t *testing.T) {
+		tree := NewRBTree(_cmp{}, 2, 3)
+		v := tree.FirstOr(1)
+		assert.Equal(t, 2, v)
+	})
 }
 
 func TestRBTree_Last(t *testing.T) {
-	tree := NewRBTree(_cmp{}, 1, 2, 4, 2)
-	v, ok := tree.Last()
-	assert.True(t, ok)
-	assert.Equal(t, 4, v)
+	t.Run("empty tree", func(t *testing.T) {
+		tree := NewRBTree[int](_cmp{})
+		v, ok := tree.Last()
+		assert.False(t, ok)
+		assert.Equal(t, 0, v)
+	})
+
+	t.Run("non-empty tree", func(t *testing.T) {
+		tree := NewRBTree(_cmp{}, 1, 2, 3)
+		v, ok := tree.Last()
+		assert.True(t, ok)
+		assert.Equal(t, 3, v)
+	})
 }
 
 func TestRBTree_LastOr(t *testing.T) {
-	tree := NewRBTree[int](_cmp{})
-	v := tree.LastOr(1)
-	assert.Equal(t, 1, v)
+	t.Run("empty tree", func(t *testing.T) {
+		tree := NewRBTree[int](_cmp{})
+		v := tree.LastOr(1)
+		assert.Equal(t, 1, v)
+	})
+
+	t.Run("non-empty tree", func(t *testing.T) {
+		tree := NewRBTree(_cmp{}, 2, 3)
+		v := tree.LastOr(10)
+		assert.Equal(t, 3, v)
+	})
 }
 
 func TestRBTree_Each(t *testing.T) {
@@ -108,10 +156,18 @@ func TestRBTree_MarshalJSON(t *testing.T) {
 }
 
 func TestRBTree_UnmarshalJSON(t *testing.T) {
-	tree := NewRBTree[int](_cmp{})
-	err := json.Unmarshal([]byte(`[1,2,2,3,4]`), tree)
-	assert.Nil(t, err)
-	assert.Equal(t, []int{1, 2, 2, 3, 4}, tree.ToArray())
+	t.Run("valid json", func(t *testing.T) {
+		tree := NewRBTree[int](_cmp{})
+		err := json.Unmarshal([]byte(`[1,2,2,3,4]`), tree)
+		assert.Nil(t, err)
+		assert.Equal(t, []int{1, 2, 2, 3, 4}, tree.ToArray())
+	})
+
+	t.Run("invalid json", func(t *testing.T) {
+		tree := NewRBTree[int](_cmp{})
+		err := json.Unmarshal([]byte(`[1,2,2,3,4`), tree)
+		assert.NotNil(t, err)
+	})
 }
 
 func TestRBTree_String(t *testing.T) {
