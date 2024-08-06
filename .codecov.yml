@@ -25,19 +25,19 @@ comment:
 flag_management:
   default_rules:
     carryforward: false
-  list:
-    path:
-      - list
-  set:
-    path:
-      - set
-  queue:
-    path:
-      - queue
-  tree:
-    path:
-      - tree
-  map:
-    path:
-      - kv
-
+  individual_flags:
+    - name: map
+      paths:
+        - kv
+    - name: list
+      paths:
+        - list
+    - name: set
+      paths:
+        - set
+    - name: queue
+      paths:
+        - queue
+    - name: tree
+      paths:
+        - tree
