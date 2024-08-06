@@ -50,9 +50,8 @@ func TestLinkedQueue_Enqueue(t *testing.T) {
 
 	t.Run("multi-coroutines", func(t *testing.T) {
 		queue := NewLinkedQueue[int]()
-		if queue.TryLock() {
-			defer queue.Unlock()
-		}
+		queue.Lock()
+		defer queue.Unlock()
 		var expected []int
 		var wg sync.WaitGroup
 		for i := 0; i < 10; i++ {
