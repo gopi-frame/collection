@@ -25,3 +25,4 @@ jobs:
           fail_ci_if_error: true
           verbose: true
           codecov_yml_path: ./.codecov.yml
+          flags: unittests,map,list,set,queue,tree
