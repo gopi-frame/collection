@@ -1,0 +1,43 @@
+codecov:
+  require_ci_to_pass: false
+  notify:
+    wait_for_ci: false
+    after_n_builds: 1
+
+coverage:
+  precision: 2
+  round: down
+  status:
+    project:
+      default:
+        target: 90%
+        threshold: 1%
+    patch:
+      default:
+        target: 90%
+        threshold: 1%
+
+comment:
+  layout: "diff, flags, files"
+  behavior: default
+  require_changes: false
+
+flag_managemant:
+  default_rules:
+    carryforward: false
+  list:
+    path:
+      - list
+  set:
+    path:
+      - set
+  queue:
+    path:
+      - queue
+  tree:
+    path:
+      - tree
+  map:
+    path:
+      - kv
+
