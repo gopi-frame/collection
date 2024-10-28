@@ -17,6 +17,13 @@ func NewMap[K comparable, V any]() *Map[K, V] {
 	return m
 }
 
+// NewFromMap new from map
+func NewFromMap[K comparable, V any](m map[K]V) *Map[K, V] {
+	mm := NewMap[K, V]()
+	mm.items = m
+	return mm
+}
+
 // Map map
 type Map[K comparable, V any] struct {
 	sync.RWMutex
@@ -147,6 +154,10 @@ func (m *Map[K, V]) UnmarshalJSON(data []byte) error {
 // ToMap converts to map
 func (m *Map[K, V]) ToMap() map[K]V {
 	return m.items
+}
+
+func (m *Map[K, V]) FromMap(items map[K]V) {
+	m.items = items
 }
 
 // String converts to string
