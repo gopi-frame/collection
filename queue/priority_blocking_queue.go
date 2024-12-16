@@ -70,9 +70,8 @@ func (q *PriorityBlockingQueue[E]) Peek() (E, bool) {
 
 // TryEnqueue enqueues a new element into the queue, it will return false if the size is up to the capacity
 func (q *PriorityBlockingQueue[E]) TryEnqueue(value E) bool {
-	if q.items.TryLock() {
-		defer q.items.Unlock()
-	}
+	q.items.RLock()
+	defer q.items.RUnlock()
 	if q.cap == q.items.Count() {
 		return false
 	}

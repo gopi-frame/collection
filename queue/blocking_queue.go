@@ -37,9 +37,8 @@ type BlockingQueue[E any] struct {
 
 // Count returns the size of queue
 func (q *BlockingQueue[E]) Count() int64 {
-	if q.lock.TryRLock() {
-		defer q.lock.RUnlock()
-	}
+	q.lock.RLock()
+	defer q.lock.RUnlock()
 	return q.size
 }
 
@@ -55,18 +54,16 @@ func (q *BlockingQueue[E]) IsNotEmpty() bool {
 
 // Clear clears the queue
 func (q *BlockingQueue[E]) Clear() {
-	if q.lock.TryLock() {
-		defer q.lock.Unlock()
-	}
+	q.lock.Lock()
+	defer q.lock.Unlock()
 	q.items = nil
 	q.size = 0
 }
 
 // Peek returns the first element of the queue
 func (q *BlockingQueue[E]) Peek() (E, bool) {
-	if q.lock.TryRLock() {
-		defer q.lock.RUnlock()
-	}
+	q.lock.RLock()
+	q.lock.RUnlock()
 	if q.size == 0 {
 		return *new(E), false
 	}
@@ -75,9 +72,9 @@ func (q *BlockingQueue[E]) Peek() (E, bool) {
 
 // TryEnqueue enqueues a new element into the queue, it will return false if the size is up to the capacity
 func (q *BlockingQueue[E]) TryEnqueue(value E) bool {
-	if q.lock.TryLock() {
-		defer q.lock.Unlock()
-	}
+	q.lock.Lock()
+	defer q.lock.Unlock()
+
 	if q.cap == q.size {
 		return false
 	}
@@ -90,9 +87,8 @@ func (q *BlockingQueue[E]) TryEnqueue(value E) bool {
 // TryDequeue dequeues the first element of the queue and returns it.
 // The empty value of the element type and false will be returned when the queue is empty
 func (q *BlockingQueue[E]) TryDequeue() (E, bool) {
-	if q.lock.TryLock() {
-		defer q.lock.Unlock()
-	}
+	q.lock.Lock()
+	defer q.lock.Unlock()
 	if q.size == 0 {
 		return *new(E), false
 	}
@@ -105,9 +101,8 @@ func (q *BlockingQueue[E]) TryDequeue() (E, bool) {
 
 // Enqueue enqueues a new element into the queue, it will block if the size is up to capacity
 func (q *BlockingQueue[E]) Enqueue(value E) bool {
-	if q.lock.TryLock() {
-		defer q.lock.Unlock()
-	}
+	q.lock.TryLock()
+	defer q.lock.Unlock()
 	for q.cap == q.size {
 		q.putLock.Wait()
 	}
@@ -119,9 +114,8 @@ func (q *BlockingQueue[E]) Enqueue(value E) bool {
 
 // Dequeue dequeues the first element of queue, it will block if the queue is empty
 func (q *BlockingQueue[E]) Dequeue() (E, bool) {
-	if q.lock.TryLock() {
-		defer q.lock.Unlock()
-	}
+	q.lock.TryLock()
+	defer q.lock.Unlock()
 	for q.size == 0 {
 		q.takeLock.Wait()
 	}
@@ -141,9 +135,8 @@ func (q *BlockingQueue[E]) EnqueueTimeout(value E, duration time.Duration) bool 
 		done := make(chan struct{})
 		ok = future.Timeout(func() bool {
 			future.Void(func() {
-				if q.lock.TryLock() {
-					defer q.lock.Unlock()
-				}
+				q.lock.TryLock()
+				defer q.lock.Unlock()
 				for q.cap == q.size {
 					q.putLock.Wait()
 				}
@@ -173,9 +166,8 @@ func (q *BlockingQueue[E]) DequeueTimeout(duration time.Duration) (E, bool) {
 		done := make(chan struct{})
 		ok = future.Timeout(func() bool {
 			future.Void(func() {
-				if q.lock.TryLock() {
-					defer q.lock.Unlock()
-				}
+				q.lock.TryLock()
+				defer q.lock.Unlock()
 				for q.size == 0 {
 					q.takeLock.Wait()
 				}
@@ -197,9 +189,8 @@ func (q *BlockingQueue[E]) DequeueTimeout(duration time.Duration) (E, bool) {
 
 // Remove removes the specific element
 func (q *BlockingQueue[E]) Remove(value E) {
-	if q.lock.TryLock() {
-		defer q.lock.Unlock()
-	}
+	q.lock.TryLock()
+	defer q.lock.Unlock()
 	var items []E
 	for _, item := range q.items {
 		if !reflect.DeepEqual(item, value) {
@@ -212,9 +203,8 @@ func (q *BlockingQueue[E]) Remove(value E) {
 
 // RemoveWhere removes elements which matches the callback
 func (q *BlockingQueue[E]) RemoveWhere(callback func(E) bool) {
-	if q.lock.TryLock() {
-		defer q.lock.Unlock()
-	}
+	q.lock.TryLock()
+	defer q.lock.Unlock()
 	var items []E
 	for _, item := range q.items {
 		if !callback(item) {
@@ -227,9 +217,8 @@ func (q *BlockingQueue[E]) RemoveWhere(callback func(E) bool) {
 
 // ToArray converts to array
 func (q *BlockingQueue[E]) ToArray() []E {
-	if q.lock.TryRLock() {
-		defer q.lock.RUnlock()
-	}
+	q.lock.TryRLock()
+	defer q.lock.RUnlock()
 	return q.items
 }
 
@@ -238,16 +227,15 @@ func (q *BlockingQueue[E]) ToJSON() ([]byte, error) {
 	return json.Marshal(q.ToArray())
 }
 
-// MarshalJSON implements [json.Marshaller]
+// MarshalJSON implements [json.Marshaler]
 func (q *BlockingQueue[E]) MarshalJSON() ([]byte, error) {
 	return q.ToJSON()
 }
 
-// UnmarshalJSON implements [json.Unmarshaller]
+// UnmarshalJSON implements [json.Unmarshaler]
 func (q *BlockingQueue[E]) UnmarshalJSON(data []byte) error {
-	if q.lock.TryLock() {
-		defer q.lock.Unlock()
-	}
+	q.lock.TryLock()
+	defer q.lock.Unlock()
 	values := make([]E, 0)
 	if err := json.Unmarshal(data, &values); err != nil {
 		return err
@@ -265,9 +253,8 @@ func (q *BlockingQueue[E]) UnmarshalJSON(data []byte) error {
 
 // String converts to string
 func (q *BlockingQueue[E]) String() string {
-	if q.lock.TryRLock() {
-		defer q.lock.RUnlock()
-	}
+	q.lock.TryRLock()
+	defer q.lock.RUnlock()
 	str := new(strings.Builder)
 	str.WriteString(fmt.Sprintf("BlockingQueue[%T](len=%d)", *new(E), q.size))
 	str.WriteByte('{')

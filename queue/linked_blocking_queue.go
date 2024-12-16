@@ -34,9 +34,8 @@ type LinkedBlockingQueue[E any] struct {
 
 // Count returns the size of queue
 func (q *LinkedBlockingQueue[E]) Count() int64 {
-	if q.items.TryRLock() {
-		defer q.items.RUnlock()
-	}
+	q.items.RLock()
+	defer q.items.RUnlock()
 	return q.items.Count()
 }
 

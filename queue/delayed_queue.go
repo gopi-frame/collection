@@ -36,37 +36,32 @@ func (q *DelayedQueue[Q, T]) Compare(a, b Q) int {
 }
 
 func (q *DelayedQueue[Q, T]) Count() int64 {
-	if q.items.TryRLock() {
-		defer q.items.RUnlock()
-	}
+	q.items.RLock()
+	defer q.items.RUnlock()
 	return q.items.Count()
 }
 
 func (q *DelayedQueue[Q, T]) IsEmpty() bool {
-	if q.items.TryLock() {
-		defer q.items.Unlock()
-	}
+	q.items.Lock()
+	defer q.items.Unlock()
 	return q.items.IsEmpty()
 }
 
 func (q *DelayedQueue[Q, T]) IsNotEmpty() bool {
-	if q.items.TryLock() {
-		defer q.items.Unlock()
-	}
+	q.items.Lock()
+	defer q.items.Unlock()
 	return q.items.IsNotEmpty()
 }
 
 func (q *DelayedQueue[Q, T]) Clear() {
-	if q.items.TryLock() {
-		defer q.items.Unlock()
-	}
+	q.items.Lock()
+	defer q.items.Unlock()
 	q.items.Clear()
 }
 
 func (q *DelayedQueue[Q, T]) Peek() (Q, bool) {
-	if q.items.TryLock() {
-		defer q.items.Unlock()
-	}
+	q.items.Lock()
+	defer q.items.Unlock()
 	return q.items.Peek()
 }
 
@@ -75,9 +70,8 @@ func (q *DelayedQueue[Q, T]) TryEnqueue(value Q) bool {
 }
 
 func (q *DelayedQueue[Q, T]) Enqueue(value Q) bool {
-	if q.items.TryLock() {
-		defer q.items.Unlock()
-	}
+	q.items.Lock()
+	defer q.items.Unlock()
 	ok := q.items.Enqueue(value)
 	q.takeLock.Broadcast()
 	return ok
@@ -88,9 +82,8 @@ func (q *DelayedQueue[Q, T]) EnqueueTimeout(value Q, _ time.Duration) bool {
 }
 
 func (q *DelayedQueue[Q, T]) TryDequeue() (Q, bool) {
-	if q.items.TryLock() {
-		defer q.items.Unlock()
-	}
+	q.items.Lock()
+	defer q.items.Unlock()
 	if v, ok := q.items.Peek(); ok && v.Until().Before(time.Now()) {
 		return q.items.Dequeue()
 	}
@@ -98,9 +91,8 @@ func (q *DelayedQueue[Q, T]) TryDequeue() (Q, bool) {
 }
 
 func (q *DelayedQueue[Q, T]) Dequeue() (Q, bool) {
-	if q.items.TryLock() {
-		defer q.items.Unlock()
-	}
+	q.items.Lock()
+	defer q.items.Unlock()
 	for q.items.IsEmpty() {
 		q.takeLock.Wait()
 	}
@@ -137,32 +129,26 @@ func (q *DelayedQueue[Q, T]) DequeueTimeout(duration time.Duration) (Q, bool) {
 }
 
 func (q *DelayedQueue[Q, T]) Remove(value Q) {
-	if q.items.TryLock() {
-		defer q.items.Unlock()
-	}
 	q.RemoveWhere(func(v Q) bool {
 		return reflect.DeepEqual(v.Value(), value.Value()) && v.Until() == value.Until()
 	})
 }
 
 func (q *DelayedQueue[Q, T]) RemoveWhere(callback func(value Q) bool) {
-	if q.items.TryLock() {
-		defer q.items.Unlock()
-	}
+	q.items.Lock()
+	defer q.items.Unlock()
 	q.items.RemoveWhere(callback)
 }
 
 func (q *DelayedQueue[Q, T]) ToArray() []Q {
-	if q.items.TryLock() {
-		defer q.items.Unlock()
-	}
+	q.items.Lock()
+	defer q.items.Unlock()
 	return q.items.ToArray()
 }
 
 func (q *DelayedQueue[Q, T]) ToJSON() ([]byte, error) {
-	if q.items.TryLock() {
-		defer q.items.Unlock()
-	}
+	q.items.Lock()
+	defer q.items.Unlock()
 	return json.Marshal(q.items.ToArray())
 }
 
@@ -171,24 +157,23 @@ func (q *DelayedQueue[Q, T]) MarshalJSON() ([]byte, error) {
 }
 
 func (q *DelayedQueue[Q, T]) UnmarshalJSON(data []byte) error {
-	if q.items.TryLock() {
-		defer q.items.Unlock()
-	}
+	q.items.Lock()
+	defer q.items.Unlock()
 	var items []Q
 	err := json.Unmarshal(data, &items)
 	if err != nil {
 		return err
 	}
 	for _, item := range items {
-		q.Enqueue(item)
+		q.items.Enqueue(item)
 	}
+	q.takeLock.Broadcast()
 	return nil
 }
 
 func (q *DelayedQueue[Q, T]) String() string {
-	if q.items.TryLock() {
-		defer q.items.Unlock()
-	}
+	q.items.Lock()
+	defer q.items.Unlock()
 	str := new(strings.Builder)
 	str.WriteString(fmt.Sprintf("DelayedQueue[%T](len=%d)", *new(T), q.items.Count()))
 	str.WriteByte('{')
